@@ -1,0 +1,76 @@
+Phase 1: The Foundation & Data Ingestion 
+Goal: Set up the core backend, database schema, get user data flowing into the system, 
+and preprocess it for accuracy. 
+• Initialize the Backend: Spin up a FastAPI application. It is asynchronous by default, 
+making it perfect for handling concurrent API requests and real-time feeds. 
+• Database Design: Set up PostgreSQL to store user profiles, portfolio states, and 
+transaction histories. You will need tables for Users, Portfolios, Holdings (where 
+you store specific assets like BEL, NTPC, or mutual funds), and crucially, a 
+SystemPreferences table to store their goals, risk preference, constraints, alert 
+thresholds, and review frequency. 
+• File Upload Pipeline: Build the endpoint to accept user-uploaded data (e.g., CSV or 
+JSON files). The backend must parse this data, validate it using Pydantic, and map it 
+to the Holdings table. 
+• Market Data Integration: Connect to your market data providers like Alpha Vantage 
+or Yahoo Finance. Build a scheduled service to fetch historical pricing, benchmark 
+data, and current returns for the assets in the user's portfolio. 
+• Data Preprocessing & Validation: Build a strict layer to clean missing values, align 
+timestamps, and validate symbol formats (specifically handling .NS and .BO suffixes 
+correctly so Indian market feeds do not break). 
+Phase 2: The Quantitative Engine (Optimization & Analytics) 
+Goal: Build the brain that analyzes the portfolio and calculates the mathematically ideal 
+state. 
+• Integrate PyPortfolioOpt: Use this library as your core mathematical engine. 
+• Model Endpoints: Create isolated functions for your optimization strategies: 
+o Markowitz (Mean-Variance): Optimize for maximum return given a specific 
+risk threshold. 
+o Black-Litterman: Allow the user to input their own market views or utilize 
+historical priors. 
+• Analytics Calculator (State Engine): Build utility functions to calculate current 
+portfolio weights, absolute returns, rolling volatility, maximum drawdown, and 
+sector concentration. This establishes the robust baseline "current state" vs the 
+"optimized target state". 
+Phase 3: Real-Time Monitoring & Drift Detection 
+Goal: Keep the system watching the portfolio continuously so it can catch deviations early. 
+• Task Queue Setup: Implement Celery with a Redis broker. You cannot block your 
+main FastAPI thread with continuous calculation loops. 
+• Drift Checking Logic: Write a background worker that runs at a set interval. It 
+should pull the latest market prices, recalculate the current portfolio weights, 
+measure portfolio risk/correlation, and compare them against the user's target 
+weights. 
+• Threshold Triggers: Define the rules. If a specific asset's weight or risk exposure 
+drifts beyond the user's defined percentage limits, trigger an event flag to push to 
+the decision checkpoint. 
+Phase 4: The Recommendation & Explanation Layer 
+Goal: Turn cold mathematical output into an actionable, human-centric advisory 
+workflow. 
+• Candidate Action Scoring: Before generating an alert, evaluate candidate actions. 
+Mathematically score whether a "Rebalance" is actually optimal compared to a 
+"Hold" (factoring in estimated risk impact and transaction costs). 
+• Action Engine: When the trigger fires, generate a structured recommendation 
+payload based on the highest score: "Hold", "Rebalance", or "Review". 
+• LLM Integration (Gemini): Pass the quantitative data (the drift percentage, market 
+triggers, proposed weights) into a prompt to make the data feel human. 
+• Explainability Generator: Instruct the model to return a plain-language output 
+detailing: What changed? Why does it matter? What action is suggested? Crucially, 
+include a "Scenario Projection" (What may happen next if the user ignores this?). 
+Store this response in the database attached to a Recommendation ID. 
+Phase 5: The Interactive Dashboard & Execution Loop 
+Goal: Build the React UI where the user visualizes the data, receives alerts, and drives the 
+continuous feedback loop. 
+• Frontend Scaffolding: Set up your React + Vite application. Use Zustand for global 
+state management (handling user auth and current portfolio state) and TanStack 
+Query for data fetching. 
+• Data Visualization: Implement Recharts to build the portfolio allocation pie charts, 
+historical performance line graphs, and dashboard cards. 
+• The Live Alert System: Establish a WebSocket connection between FastAPI and 
+React. When the backend generates a recommendation, push that plain-language 
+notification directly to the UI. 
+• The Accept/Reject Feedback Loop: Build the interactive panel displaying the alert 
+and scenario simulation. 
+o If the user clicks "Reject" or "Postpone", close the alert and log the decision 
+to an ActionHistory table. 
+o If the user clicks "Accept", fire a POST request back to the backend. The 
+backend executes the reallocation, updates the database, logs the outcome, 
+and uses this history to refine future alert thresholds. 
+ 

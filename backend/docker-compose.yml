@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: equisight_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_DB: equisight
+    ports:
+      - "5432:5432"           # Exposed so local uvicorn can connect too
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis (Celery Broker) ─────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: equisight_redis
+    restart: always
+    ports:
+      - "6379:6379"           # Exposed so local code can connect too
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Celery Worker ─────────────────────────────────────────────────────────
+  celery_worker:
+    build: .
+    container_name: equisight_celery_worker
+    restart: always
+    command: celery -A app.worker.celery_app worker --loglevel=info --concurrency=2
+    env_file: .env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+
+  # ── Celery Beat Scheduler ─────────────────────────────────────────────────
+  celery_beat:
+    build: .
+    container_name: equisight_celery_beat
+    restart: always
+    command: celery -A app.worker.celery_app beat --loglevel=info --scheduler celery.beat:PersistentScheduler
+    env_file: .env.docker
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+
+volumes:
+  pgdata:

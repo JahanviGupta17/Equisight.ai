@@ -1,0 +1,13 @@
+__    -    ... __   -        _
+LocalTime -> 2026-04-17 16:15:24
+Configuration ->
+    . broker -> redis://localhost:6379/0
+    . loader -> celery.loaders.app.AppLoader
+    . scheduler -> celery.beat.PersistentScheduler
+    . db -> celerybeat-schedule
+    . logfile -> [stderr]@%INFO
+    . maxinterval -> 5.00 minutes (300s)
+[2026-04-17 16:15:24,763: INFO/MainProcess] beat: Starting...
+
+
+
