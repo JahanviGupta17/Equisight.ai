@@ -47,14 +47,57 @@ The platform operates through a highly synchronized five-module lifecycle:
 
 ```mermaid
 graph TD
-    A[User Authentication & Portfolio Upload] -->|Normalizes Data| B(Database: PostgreSQL)
-    B --> C{Analysis Trigger}
-    C -->|Evaluates Psychology| D[Hierarchical Model Router]
-    D -->|Selects Model: HRP / CVaR / MVO| E[Apply L2 Friction Constraints]
-    E -->|Optimized State| F[Background RAG Execution]
-    F -->|Query News Context| G(Vector DB: Qdrant)
-    G -->|Contextual Data| H[Gemini LLM: Generate Advisory]
-    H -->|WebSocket Push| I[Real-Time Alert & Rebalance Drawer]
+    A["👤 User Authentication<br/>& Portfolio Upload"] -->|Parse CSV/PDF| B["📊 Data Normalization<br/>PostgreSQL"]
+    
+    B --> C["🔍 Analysis Trigger<br/>Daily / On-Demand"]
+    
+    C -->|Evaluate Investor Profile| D["🧠 Behavioral Analysis<br/>Risk Tolerance & Psychology"]
+    
+    D --> E{{"⚙️ Hierarchical<br/>Model Router"}}
+    
+    E -->|Panic-Prone| E1["🛡️ HRP Model<br/>Agglomerative Clustering"]
+    E -->|Conservative| E2["📉 Mean-CVaR<br/>95th Percentile Protection"]
+    E -->|Advanced| E3["🎯 Black-Litterman<br/>Bayesian Blending"]
+    
+    E1 --> F["🔐 Friction Constraints<br/>L2 Regularization"]
+    E2 --> F
+    E3 --> F
+    
+    F --> G{{"✅ DNT Gate Check<br/>Sharpe Δ > 0.05?"}}
+    
+    G -->|Blocked| H["❌ Trade Rejected<br/>Insufficient Improvement"]
+    G -->|Approved| I["🚀 Execute Rebalance<br/>Optimized Portfolio"]
+    
+    I --> J["🔄 Background RAG Pipeline<br/>News Context Retrieval"]
+    
+    J --> K["📰 Vector Search<br/>Qdrant Cloud Database<br/>LiveMint, NDTV Feeds"]
+    
+    K --> L["🤖 LLM Processing<br/>Gemini 3.1-Flash-Lite<br/>Synthesize Insights"]
+    
+    L --> M["💬 Plain-English Advisory<br/>Explain Every Decision"]
+    
+    M --> N["⚡ WebSocket Push<br/>Real-Time Alerts"]
+    
+    N --> O["📱 User Interface<br/>React 19 Rebalance Drawer<br/>Live Notifications"]
+    
+    style A fill:#e1f5ff,stroke:#01579b,stroke-width:2px,color:#000
+    style B fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+    style C fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    style D fill:#f1f8e9,stroke:#33691e,stroke-width:2px,color:#000
+    style E fill:#fce4ec,stroke:#880e4f,stroke-width:3px,color:#000
+    style E1 fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    style E2 fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    style E3 fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    style F fill:#ffe0b2,stroke:#e65100,stroke-width:2px,color:#000
+    style G fill:#ffccbc,stroke:#d84315,stroke-width:3px,color:#000
+    style H fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px,color:#000
+    style I fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    style J fill:#e1bee7,stroke:#6a1b9a,stroke-width:2px,color:#000
+    style K fill:#b3e5fc,stroke:#01579b,stroke-width:2px,color:#000
+    style L fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    style M fill:#f0f4c3,stroke:#827717,stroke-width:2px,color:#000
+    style N fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    style O fill:#e0f2f1,stroke:#004d40,stroke-width:2px,color:#000
 ```
 
 ---
